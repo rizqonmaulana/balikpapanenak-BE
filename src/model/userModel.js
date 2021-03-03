@@ -59,7 +59,11 @@ module.exports = {
           (error, result) => {
             if (!error) {
               console.log(result)
-              resolve(data)
+              if (data.user_password) {
+                resolve(result)
+              } else {
+                resolve(data)
+              }
             } else {
               reject(new Error(error))
             }

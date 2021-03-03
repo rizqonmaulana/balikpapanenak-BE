@@ -2,7 +2,7 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const helper = require('../helper/response')
 const nodemailer = require('nodemailer')
-const fs = require('fs')
+// const fs = require('fs')
 
 const {
   register,
@@ -145,7 +145,11 @@ module.exports = {
       } = request.body
 
       // let newLogo
-      // const user = await checkActiveEmail(user_email)
+      const user = await checkActiveEmail(user_email)
+
+      if (user.length < 1) {
+        return helper.response(response, 403, 'Akun tidak ditemukan')
+      }
 
       // if (request.file === undefined) {
       //   newLogo = user[0].user_logo
@@ -184,6 +188,35 @@ module.exports = {
         result
       )
     } catch (error) {
+      return helper.response(response, 400, 'Bad Request', error)
+    }
+  },
+  updatePassword: async (request, response) => {
+    try {
+      const { user_email, user_password } = request.body
+
+      const salt = bcrypt.genSaltSync(10)
+      const encryptPassword = bcrypt.hashSync(user_password, salt)
+
+      const userCheck = await checkActiveEmail(user_email)
+
+      const data = {
+        user_password: encryptPassword
+      }
+
+      if (userCheck.length > 0) {
+        const result = await updateUser(data, user_email)
+        return helper.response(
+          response,
+          200,
+          `Success updated password ${user_email}`,
+          result
+        )
+      } else {
+        return helper.response(response, 400, 'Akun tidak ditemukan')
+      }
+    } catch (error) {
+      console.log(error)
       return helper.response(response, 400, 'Bad Request', error)
     }
   }

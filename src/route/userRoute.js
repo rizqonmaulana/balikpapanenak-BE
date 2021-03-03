@@ -3,12 +3,14 @@ const {
   register,
   activateAccount,
   login,
-  updateUser
+  updateUser,
+  updatePassword
 } = require('../controller/userController')
 
 router.post('/register', register)
 router.patch('/activate', activateAccount)
 router.post('/login', login)
-router.patch('/update', updateUser)
+router.patch('/update/profile', updateUser)
+router.patch('/update/password', updatePassword)
 
 module.exports = router
