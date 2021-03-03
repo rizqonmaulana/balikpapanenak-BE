@@ -28,5 +28,15 @@ module.exports = {
         }
       )
     })
+  },
+  activateAccount: (user_key) => {
+    return new Promise((resolve, reject) => {
+      connection.query(
+        `UPDATE user SET user_status = 1, user_key = NULL WHERE user_key = '${user_key}'`,
+        (error, result) => {
+          !error ? resolve(result) : reject(new Error(error))
+        }
+      )
+    })
   }
 }

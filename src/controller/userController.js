@@ -4,7 +4,11 @@ const helper = require('../helper/response')
 const nodemailer = require('nodemailer')
 // const fs = require('fs')
 
-const { register, checkEmail } = require('../model/userModel.js')
+const {
+  register,
+  checkEmail,
+  activateAccount
+} = require('../model/userModel.js')
 
 module.exports = {
   register: async (req, res) => {
@@ -64,11 +68,27 @@ module.exports = {
           return helper.response(
             res,
             200,
-            'Success Register User, please check your email to activate your account'
+            'Terimakasih telah mendaftarkan resto / kedai anda, silakan cek email untuk mengaktifkan akun anda'
           )
         }
       })
     } catch (error) {
+      return helper.response(res, 400, 'Bad Request', error)
+    }
+  },
+  activateAccount: async (req, res) => {
+    try {
+      const { user_key } = req.body
+
+      const result = await activateAccount(user_key)
+      return helper.response(
+        res,
+        200,
+        'Akun anda telah aktif, silakan login dan lengkapi data profile anda',
+        result
+      )
+    } catch (error) {
+      console.log(error)
       return helper.response(res, 400, 'Bad Request', error)
     }
   }
