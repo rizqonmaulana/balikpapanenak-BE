@@ -9,7 +9,8 @@ const {
   checkEmail,
   activateAccount,
   checkActiveEmail,
-  updateUser
+  updateUser,
+  resetPassword
 } = require('../model/userModel.js')
 
 module.exports = {
@@ -127,7 +128,7 @@ module.exports = {
       return helper.response(res, 400, 'Bad Request', error)
     }
   },
-  updateUser: async (request, response) => {
+  updateUser: async (req, res) => {
     try {
       const {
         user_email,
@@ -142,13 +143,13 @@ module.exports = {
         user_desc,
         // user_logo,
         user_name_person
-      } = request.body
+      } = req.body
 
       // let newLogo
       const user = await checkActiveEmail(user_email)
 
       if (user.length < 1) {
-        return helper.response(response, 403, 'Akun tidak ditemukan')
+        return helper.response(res, 403, 'Akun tidak ditemukan')
       }
 
       // if (request.file === undefined) {
@@ -182,18 +183,18 @@ module.exports = {
       const result = await updateUser(data, user_email)
 
       return helper.response(
-        response,
+        res,
         200,
         `Success Update user ${user_email}`,
         result
       )
     } catch (error) {
-      return helper.response(response, 400, 'Bad Request', error)
+      return helper.response(res, 400, 'Bad Request', error)
     }
   },
-  updatePassword: async (request, response) => {
+  updatePassword: async (req, res) => {
     try {
-      const { user_email, user_password } = request.body
+      const { user_email, user_password } = req.body
 
       const salt = bcrypt.genSaltSync(10)
       const encryptPassword = bcrypt.hashSync(user_password, salt)
@@ -207,17 +208,93 @@ module.exports = {
       if (userCheck.length > 0) {
         const result = await updateUser(data, user_email)
         return helper.response(
-          response,
+          res,
           200,
           `Success updated password ${user_email}`,
           result
         )
       } else {
-        return helper.response(response, 400, 'Akun tidak ditemukan')
+        return helper.response(res, 400, 'Akun tidak ditemukan')
       }
     } catch (error) {
       console.log(error)
-      return helper.response(response, 400, 'Bad Request', error)
+      return helper.response(res, 400, 'Bad Request', error)
+    }
+  },
+  forgotPassword: async (req, res) => {
+    try {
+      const { user_email } = req.body
+
+      const emailCheck = await checkActiveEmail(user_email)
+
+      if (emailCheck.length < 1) {
+        return helper.response(res, 400, 'Account not found')
+      }
+
+      const crypto = require('crypto')
+      const user_key = crypto.randomBytes(20).toString('hex')
+
+      const data = {
+        user_key
+      }
+
+      const transporter = nodemailer.createTransport({
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false, // true for 465, false for other ports
+        auth: {
+          user: process.env.EMAIL_NAME, // generated ethereal user
+          pass: process.env.EMAIL_PASS // generated ethereal password
+        }
+      })
+      const mailOptions = {
+        from: '"Balikpapan Enak" <balikpapanenak@gmail.com', // sender address
+        to: user_email, // list of receivers
+        subject: 'Balikpapan Enak - Reset password', // Subject line
+        html: `<p>Hallo ${user_email}, kami mendapatkan informasi bahwa anda lupa password anda, </p>
+            <p>Silakan klik link dibawah untuk mengaktifkan melakukan reset password</p>
+            <a href="${process.env.URL}/forgot/${user_key}">reset password</a>`
+      }
+      await transporter.sendMail(mailOptions, function (error, info) {
+        if (error) {
+          console.log(error)
+          return helper.response(res, 400, 'Email not send !')
+        } else {
+          console.log(info)
+          updateUser(data, user_email)
+          return helper.response(
+            res,
+            200,
+            'Please check your email to reset your password '
+          )
+        }
+      })
+    } catch (error) {
+      console.log(error)
+      return helper.response(res, 400, 'Bad Request', error)
+    }
+  },
+  resetPassword: async (req, res) => {
+    try {
+      const { user_password, user_key } = req.body
+
+      const salt = bcrypt.genSaltSync(10)
+      const encryptPassword = bcrypt.hashSync(user_password, salt)
+
+      const result = await resetPassword(encryptPassword, user_key)
+      console.log(result.changedRows)
+      if (result.changedRows) {
+        return helper.response(
+          res,
+          200,
+          'Password anda berhasil di reset, silakan login ',
+          result
+        )
+      } else {
+        return helper.response(res, 403, 'user key tidak ditemukan')
+      }
+    } catch (error) {
+      return helper.response(res, 400, 'Bad Request', error)
     }
   }
 }

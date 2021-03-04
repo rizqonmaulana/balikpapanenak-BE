@@ -52,23 +52,36 @@ module.exports = {
   },
   updateUser: (data, email) => {
     return new Promise((resolve, reject) => {
-      console.log(
-        connection.query(
-          'UPDATE user SET ? WHERE user_email = ?',
-          [data, email],
-          (error, result) => {
-            if (!error) {
-              console.log(result)
-              if (data.user_password) {
-                resolve(result)
-              } else {
-                resolve(data)
-              }
+      connection.query(
+        'UPDATE user SET ? WHERE user_email = ?',
+        [data, email],
+        (error, result) => {
+          if (!error) {
+            console.log(result)
+            if (data.user_password) {
+              resolve(result)
             } else {
-              reject(new Error(error))
+              resolve(data)
             }
+          } else {
+            reject(new Error(error))
           }
-        )
+        }
+      )
+    })
+  },
+  resetPassword: (password, user_key) => {
+    return new Promise((resolve, reject) => {
+      connection.query(
+        `UPDATE user SET user_password = '${password}', user_key = NULL WHERE user_key = '${user_key}'`,
+        (error, result) => {
+          if (!error) {
+            console.log(result)
+            resolve(result)
+          } else {
+            reject(new Error(error))
+          }
+        }
       )
     })
   }
