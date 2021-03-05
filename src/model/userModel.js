@@ -50,6 +50,17 @@ module.exports = {
       )
     })
   },
+  checkRoleZero: (id) => {
+    return new Promise((resolve, reject) => {
+      connection.query(
+        'SELECT * FROM user WHERE user_id = ? AND user_role = 0 AND user_status = 1',
+        id,
+        (error, result) => {
+          !error ? resolve(result) : reject(new Error(error))
+        }
+      )
+    })
+  },
   updateUser: (data, email) => {
     return new Promise((resolve, reject) => {
       connection.query(

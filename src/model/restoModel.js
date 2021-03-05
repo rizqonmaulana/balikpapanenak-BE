@@ -7,6 +7,7 @@ module.exports = {
         'SELECT * FROM user JOIN resto ON user.user_id = resto.user_id WHERE user.user_status = 1',
         (error, result) => {
           if (!error) {
+            delete result.user_password
             resolve(result)
           } else {
             reject(error)
