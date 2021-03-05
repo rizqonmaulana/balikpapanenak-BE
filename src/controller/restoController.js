@@ -20,6 +20,20 @@ module.exports = {
       return helper.response(res, 400, 'Bad Request', error)
     }
   },
+  getRestoById: async (req, res) => {
+    try {
+      const { id } = req.params
+      const result = await getRestoById(id)
+
+      if (result.length > 0) {
+        return helper.response(res, 200, 'Success get resto data', result)
+      } else {
+        return helper.response(res, 403, 'Data not found')
+      }
+    } catch (error) {
+      return helper.response(res, 400, 'Bad Request', error)
+    }
+  },
   updateResto: async (req, res) => {
     try {
       const {
