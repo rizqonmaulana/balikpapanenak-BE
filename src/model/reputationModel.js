@@ -54,7 +54,7 @@ module.exports = {
         `SELECT AVG(reputation_rating) AS rating FROM reputation WHERE resto_id = ${id}`,
         (error, result) => {
           if (!error) {
-            resolve(result)
+            resolve(result[0].rating)
           } else {
             reject(error)
           }

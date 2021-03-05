@@ -28,6 +28,38 @@ module.exports = {
       return helper.response(res, 400, 'Bad Request', error)
     }
   },
+  getTopResto: async (req, res) => {
+    try {
+      const getResto = await getAllResto()
+
+      const resultArr = []
+
+      if (getResto.length > 0) {
+        for (let i = 0; i < getResto.length; i++) {
+          getResto[i].rating = await getAvgRatingByRestoId(getResto[i].resto_id)
+          resultArr.push(getResto[i])
+        }
+      }
+
+      const result = resultArr.sort(function (a, b) {
+        return b.rating - a.rating
+      })
+
+      if (result.length > 0) {
+        return helper.response(
+          res,
+          200,
+          'Success get top resto data',
+          result.slice(0, 6)
+        )
+      } else {
+        return helper.response(res, 403, 'Data not found')
+      }
+    } catch (error) {
+      console.log(error)
+      return helper.response(res, 400, 'Bad Request', error)
+    }
+  },
   getRestoByRestoId: async (req, res) => {
     try {
       const { id } = req.params
@@ -37,11 +69,16 @@ module.exports = {
       // console.log(getRating)
       let data
       if (getResto.length > 0) {
-        const getRating = await getAvgRatingByRestoId(getResto[0].resto_id)
-        if (getRating) {
+        const rating = await getAvgRatingByRestoId(getResto[0].resto_id)
+        if (rating) {
           data = {
             ...getResto[0],
-            ...getRating[0]
+            rating
+          }
+        } else {
+          data = {
+            ...getResto[0],
+            rating: 0
           }
         }
       } else {
