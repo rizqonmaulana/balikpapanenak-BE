@@ -6,7 +6,7 @@ module.exports = {
       connection.query('INSERT INTO user SET ?', data, (error, result) => {
         if (!error) {
           const newResult = {
-            user_id: result.insertedId,
+            user_id: result.insertId,
             ...data
           }
           delete newResult.user_password
@@ -21,7 +21,7 @@ module.exports = {
   checkEmail: (user_email) => {
     return new Promise((resolve, reject) => {
       connection.query(
-        'SELECT user_id, user_name, user_email FROM user WHERE user_email = ?',
+        'SELECT user_id, user_email, user_role FROM user WHERE user_email = ?',
         user_email,
         (error, result) => {
           !error ? resolve(result) : reject(new Error(error))
@@ -42,7 +42,7 @@ module.exports = {
   checkActiveEmail: (userEmail) => {
     return new Promise((resolve, reject) => {
       connection.query(
-        'SELECT user_id, user_name, user_email, user_password, user_logo FROM user WHERE user_email = ? AND user_status = 1',
+        'SELECT user_email, user_password, user_role FROM user WHERE user_email = ? AND user_status = 1',
         userEmail,
         (error, result) => {
           !error ? resolve(result) : reject(new Error(error))
@@ -80,6 +80,34 @@ module.exports = {
             resolve(result)
           } else {
             reject(new Error(error))
+          }
+        }
+      )
+    })
+  },
+  getUserByEmail: (email) => {
+    return new Promise((resolve, reject) => {
+      connection.query(
+        `SELECT * FROM user WHERE user_email = '${email}'`,
+        (error, result) => {
+          if (!error) {
+            resolve(result)
+          } else {
+            reject(error)
+          }
+        }
+      )
+    })
+  },
+  deleteAccount: (email) => {
+    return new Promise((resolve, reject) => {
+      connection.query(
+        `DELETE FROM user WHERE user_email = '${email}'`,
+        (error, result) => {
+          if (!error) {
+            resolve(result)
+          } else {
+            reject(error)
           }
         }
       )

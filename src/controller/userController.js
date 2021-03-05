@@ -2,7 +2,6 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const helper = require('../helper/response')
 const nodemailer = require('nodemailer')
-// const fs = require('fs')
 
 const {
   register,
@@ -10,13 +9,17 @@ const {
   activateAccount,
   checkActiveEmail,
   updateUser,
-  resetPassword
+  resetPassword,
+  getUserByEmail,
+  deleteAccount
 } = require('../model/userModel.js')
+
+const { createResto, deleteResto } = require('../model/restoModel')
 
 module.exports = {
   register: async (req, res) => {
     try {
-      const { user_name, user_email, user_name_person } = req.body
+      const { user_email, user_role } = req.body
       let { user_password } = req.body
 
       const salt = bcrypt.genSaltSync(10)
@@ -26,11 +29,11 @@ module.exports = {
       const user_key = crypto.randomBytes(20).toString('hex')
 
       const data = {
-        user_name,
         user_email,
         user_password,
         user_key,
-        user_name_person,
+        user_role,
+        user_status: 0,
         user_created_at: new Date()
       }
 
@@ -44,38 +47,52 @@ module.exports = {
         )
       }
 
-      const transporter = nodemailer.createTransport({
-        host: 'smtp.gmail.com',
-        port: 587,
-        secure: false, // true for 465, false for other ports
-        auth: {
-          user: process.env.EMAIL_NAME, // generated ethereal user
-          pass: process.env.EMAIL_PASS // generated ethereal password
+      const createUser = await register(data)
+
+      if (createUser) {
+        if (user_role == 1) {
+          createResto(createUser.user_id)
         }
-      })
-      const mailOptions = {
-        from: '"Balikpapan Enak" <balikpapanenak@gmail.com', // sender address
-        to: user_email, // list of receivers
-        subject: 'Balikpapan Enak - Activate account', // Subject line
-        html: `<p>Hallo ${user_name}, terimakasih karena sudah mendaftarkan resto / kedai anda, </p>
-          <p>Silakan klik link dibawah untuk mengaktifkan akun anda</p>
-          <a href="${process.env.URL}/active/${user_key}">Aktifkan akun saya</a>`
+
+        const transporter = nodemailer.createTransport({
+          host: 'smtp.gmail.com',
+          port: 587,
+          secure: false, // true for 465, false for other ports
+          auth: {
+            user: process.env.EMAIL_NAME, // generated ethereal user
+            pass: process.env.EMAIL_PASS // generated ethereal password
+          }
+        })
+        const mailOptions = {
+          from: '"Balikpapan Enak" <balikpapanenak@gmail.com', // sender address
+          to: user_email, // list of receivers
+          subject: 'Balikpapan Enak - Activate account', // Subject line
+          html: `<p>Hallo ${user_email}, terimakasih karena sudah mendaftarkan resto / kedai anda, </p>
+            <p>Silakan klik link dibawah untuk mengaktifkan akun anda</p>
+            <a href="${process.env.URL}/active/${user_key}">Aktifkan akun saya</a>`
+        }
+        await transporter.sendMail(mailOptions, function (error, info) {
+          if (error) {
+            console.log(error)
+            deleteAccount(user_email)
+            deleteResto(createUser.user_id)
+            return helper.response(
+              res,
+              400,
+              "Oops, there's something wrong. make sure you use an available email !"
+            )
+          } else {
+            console.log(info)
+            return helper.response(
+              res,
+              200,
+              'Thank you for registration, please check your email to activate your account'
+            )
+          }
+        })
       }
-      await transporter.sendMail(mailOptions, function (error, info) {
-        if (error) {
-          console.log(error)
-          return helper.response(res, 400, 'Email not send !')
-        } else {
-          console.log(info)
-          register(data)
-          return helper.response(
-            res,
-            200,
-            'Terimakasih telah mendaftarkan resto / kedai anda, silakan cek email untuk mengaktifkan akun anda'
-          )
-        }
-      })
     } catch (error) {
+      console.log(error)
       return helper.response(res, 400, 'Bad Request', error)
     }
   },
@@ -84,12 +101,16 @@ module.exports = {
       const { user_key } = req.body
 
       const result = await activateAccount(user_key)
-      return helper.response(
-        res,
-        200,
-        'Akun anda telah aktif, silakan login dan lengkapi data profile anda',
-        result
-      )
+      if (result.changedRows) {
+        return helper.response(
+          res,
+          200,
+          'Akun anda telah aktif, silakan login dan lengkapi data profile anda',
+          result
+        )
+      } else {
+        return helper.response(res, 403, 'not found')
+      }
     } catch (error) {
       console.log(error)
       return helper.response(res, 400, 'Bad Request', error)
@@ -107,12 +128,12 @@ module.exports = {
         )
 
         if (checkPassword) {
-          const { user_id, user_name, user_email } = checkUserData[0]
+          const { user_id, user_email, user_role } = checkUserData[0]
 
           const payload = {
             user_id,
-            user_name,
-            user_email
+            user_email,
+            user_role
           }
 
           const token = jwt.sign(payload, 'RAHASIA', { expiresIn: '24h' })
@@ -124,70 +145,6 @@ module.exports = {
       } else {
         return helper.response(res, 400, 'Account not Registered')
       }
-    } catch (error) {
-      return helper.response(res, 400, 'Bad Request', error)
-    }
-  },
-  updateUser: async (req, res) => {
-    try {
-      const {
-        user_email,
-        user_name,
-        user_phone,
-        user_address,
-        user_kecamatan,
-        user_open_hour,
-        user_close_hour,
-        user_open_day,
-        user_close_day,
-        user_desc,
-        // user_logo,
-        user_name_person
-      } = req.body
-
-      // let newLogo
-      const user = await checkActiveEmail(user_email)
-
-      if (user.length < 1) {
-        return helper.response(res, 403, 'Akun tidak ditemukan')
-      }
-
-      // if (request.file === undefined) {
-      //   newLogo = user[0].user_logo
-      // } else {
-      //   if (user[0].user_logo !== '' && user[0].user_logo !== null) {
-      //     fs.unlink(`./uploads/${user[0].user_logo}`, function (err) {
-      //       if (err) throw err
-      //       console.log('File deleted!')
-      //     })
-      //   }
-      //   newLogo = user[0].user_logo
-      // }
-
-      const data = {
-        user_name,
-        // user_pic: newLogo,
-        user_phone,
-        user_address,
-        user_kecamatan,
-        user_open_hour,
-        user_close_hour,
-        user_open_day,
-        user_close_day,
-        user_desc,
-        // user_logo,
-        user_name_person,
-        user_updated_at: new Date()
-      }
-
-      const result = await updateUser(data, user_email)
-
-      return helper.response(
-        res,
-        200,
-        `Success Update user ${user_email}`,
-        result
-      )
     } catch (error) {
       return helper.response(res, 400, 'Bad Request', error)
     }
@@ -295,6 +252,15 @@ module.exports = {
       }
     } catch (error) {
       return helper.response(res, 400, 'Bad Request', error)
+    }
+  },
+  getUserByEmail: async (request, response) => {
+    try {
+      const { user_email } = request.params
+      const result = await getUserByEmail(user_email)
+      return helper.response(response, 200, 'Success get User', result)
+    } catch (error) {
+      return helper.response(response, 400, 'Bad Request', error)
     }
   }
 }
