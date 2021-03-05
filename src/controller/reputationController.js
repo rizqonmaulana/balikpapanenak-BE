@@ -6,7 +6,7 @@ const {
   getReputationByRestoId
 } = require('../model/reputationModel')
 const { checkRoleZero } = require('../model/userModel')
-const { getRestoById } = require('../model/restoModel')
+const { getRestoByRestoId } = require('../model/restoModel')
 
 module.exports = {
   postReputation: async (req, res) => {
@@ -22,7 +22,7 @@ module.exports = {
       if (checkUser < 1) {
         return helper.response(res, 403, 'user not found')
       }
-      const checkResto = await getRestoById(resto_id)
+      const checkResto = await getRestoByRestoId(resto_id)
       if (checkResto < 1) {
         return helper.response(res, 403, 'resto not found')
       }

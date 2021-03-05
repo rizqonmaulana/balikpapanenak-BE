@@ -30,7 +30,7 @@ module.exports = {
       )
     })
   },
-  getRestoById: (id) => {
+  getRestoByUserId: (id) => {
     return new Promise((resolve, reject) => {
       connection.query(
         `SELECT * FROM user JOIN resto ON user.user_id = resto.user_id WHERE resto.user_id = '${id}' AND user_status = 1`,
@@ -44,10 +44,24 @@ module.exports = {
       )
     })
   },
+  getRestoByRestoId: (id) => {
+    return new Promise((resolve, reject) => {
+      connection.query(
+        `SELECT * FROM user JOIN resto ON user.user_id = resto.user_id WHERE resto.resto_id = '${id}' AND user_status = 1`,
+        (error, result) => {
+          if (!error) {
+            resolve(result)
+          } else {
+            reject(error)
+          }
+        }
+      )
+    })
+  },
   updateResto: (data, id) => {
     return new Promise((resolve, reject) => {
       connection.query(
-        'UPDATE resto SET ? WHERE user_id = ?',
+        'UPDATE resto SET ? WHERE resto_id = ?',
         [data, id],
         (error, result) => {
           if (!error) {

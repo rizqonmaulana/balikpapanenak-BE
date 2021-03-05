@@ -1,15 +1,23 @@
 const helper = require('../helper/response')
 
 const {
-  getRestoById,
+  getRestoByRestoId,
   updateResto,
   getAllResto
 } = require('../model/restoModel')
+
+const { getAvgRatingByRestoId } = require('../model/reputationModel')
 
 module.exports = {
   getAllResto: async (req, res) => {
     try {
       const result = await getAllResto()
+
+      if (result.length > 0) {
+        for (let i = 0; i < result.length; i++) {
+          result[i].rating = await getAvgRatingByRestoId(result[i].resto_id)
+        }
+      }
 
       if (result.length > 0) {
         return helper.response(res, 200, 'Success get all resto data', result)
@@ -20,16 +28,27 @@ module.exports = {
       return helper.response(res, 400, 'Bad Request', error)
     }
   },
-  getRestoById: async (req, res) => {
+  getRestoByRestoId: async (req, res) => {
     try {
       const { id } = req.params
-      const result = await getRestoById(id)
+      const getResto = await getRestoByRestoId(id)
 
-      if (result.length > 0) {
-        return helper.response(res, 200, 'Success get resto data', result)
+      // const getRating = await getAvgRatingByRestoId(id)
+      // console.log(getRating)
+      let data
+      if (getResto.length > 0) {
+        const getRating = await getAvgRatingByRestoId(getResto[0].resto_id)
+        if (getRating) {
+          data = {
+            ...getResto[0],
+            ...getRating[0]
+          }
+        }
       } else {
-        return helper.response(res, 403, 'Data not found')
+        return helper.response(res, 403, 'Resto not found')
       }
+
+      return helper.response(res, 200, 'Success get resto data', data)
     } catch (error) {
       return helper.response(res, 400, 'Bad Request', error)
     }
@@ -37,7 +56,7 @@ module.exports = {
   updateResto: async (req, res) => {
     try {
       const {
-        user_id,
+        resto_id,
         resto_name,
         resto_phone,
         resto_address,
@@ -49,7 +68,7 @@ module.exports = {
         resto_desc
       } = req.body
 
-      const user = await getRestoById(user_id)
+      const user = await getRestoByRestoId(resto_id)
 
       if (user.length < 1) {
         return helper.response(res, 403, 'Account not found')
@@ -68,9 +87,14 @@ module.exports = {
         resto_updated_at: new Date()
       }
 
-      const result = await updateResto(data, user_id)
+      const result = await updateResto(data, resto_id)
 
-      return helper.response(res, 200, `Success Update user ${user_id}`, result)
+      return helper.response(
+        res,
+        200,
+        `Success Update user ${resto_id}`,
+        result
+      )
     } catch (error) {
       console.log(error)
       return helper.response(res, 400, 'Bad Request', error)

@@ -47,5 +47,19 @@ module.exports = {
         }
       )
     })
+  },
+  getAvgRatingByRestoId: (id) => {
+    return new Promise((resolve, reject) => {
+      connection.query(
+        `SELECT AVG(reputation_rating) AS rating FROM reputation WHERE resto_id = ${id}`,
+        (error, result) => {
+          if (!error) {
+            resolve(result)
+          } else {
+            reject(error)
+          }
+        }
+      )
+    })
   }
 }
