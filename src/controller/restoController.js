@@ -1,9 +1,25 @@
-const fs = require('fs')
 const helper = require('../helper/response')
 
-const { getRestoById, updateResto } = require('../model/restoModel')
+const {
+  getRestoById,
+  updateResto,
+  getAllResto
+} = require('../model/restoModel')
 
 module.exports = {
+  getAllResto: async (req, res) => {
+    try {
+      const result = await getAllResto()
+
+      if (result.length > 0) {
+        return helper.response(res, 200, 'Success get all resto data', result)
+      } else {
+        return helper.response(res, 403, 'Data not found')
+      }
+    } catch (error) {
+      return helper.response(res, 400, 'Bad Request', error)
+    }
+  },
   updateResto: async (req, res) => {
     try {
       const {
@@ -19,23 +35,10 @@ module.exports = {
         resto_desc
       } = req.body
 
-      let newImage
       const user = await getRestoById(user_id)
 
       if (user.length < 1) {
         return helper.response(res, 403, 'Account not found')
-      }
-
-      if (req.file === undefined) {
-        newImage = user[0].resto_image
-      } else {
-        if (user[0].resto_image !== '' && user[0].resto_image !== null) {
-          fs.unlink(`./uploads/${user[0].resto_image}`, function (err) {
-            if (err) throw err
-            console.log('File deleted!')
-          })
-        }
-        newImage = req.file.filename
       }
 
       const data = {
@@ -48,7 +51,6 @@ module.exports = {
         resto_open_day,
         resto_close_day,
         resto_desc,
-        resto_image: newImage,
         resto_updated_at: new Date()
       }
 

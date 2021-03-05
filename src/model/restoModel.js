@@ -1,6 +1,20 @@
 const connection = require('../config/mysql')
 
 module.exports = {
+  getAllResto: () => {
+    return new Promise((resolve, reject) => {
+      connection.query(
+        'SELECT * FROM user JOIN resto ON user.user_id = resto.user_id WHERE user.user_status = 1',
+        (error, result) => {
+          if (!error) {
+            resolve(result)
+          } else {
+            reject(error)
+          }
+        }
+      )
+    })
+  },
   createResto: (id) => {
     return new Promise((resolve, reject) => {
       connection.query(
