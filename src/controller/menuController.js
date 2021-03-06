@@ -2,6 +2,7 @@ const helper = require('../helper/response')
 const fs = require('fs')
 
 const {
+  getAllMenu,
   postMenu,
   updateMenu,
   getMenuById,
@@ -9,11 +10,68 @@ const {
   postMenuImage,
   getMenuImageById,
   deleteMenuImage,
-  getImageByMenuId
+  getImageByMenuId,
+  getOneImageByMenuId
 } = require('../model/menuModel')
 const { getRestoByRestoId } = require('../model/restoModel')
+const {
+  getAvgRatingByRestoId,
+  getCountRatingByRestoId
+} = require('../model/reputationModel')
 
 module.exports = {
+  getAllMenu: async (req, res) => {
+    try {
+      const result = await getAllMenu()
+      if (result.length > 0) {
+        for (let i = 0; i < result.length; i++) {
+          const image = await getOneImageByMenuId(result[i].menu_id)
+          const resto = await getRestoByRestoId(result[i].resto_id)
+          result[i].image = image[0]
+          result[i].resto = resto[0]
+          result[i].rating = await getAvgRatingByRestoId(result[i].resto_id)
+          result[i].review_by = await getCountRatingByRestoId(
+            result[i].resto_id
+          )
+        }
+      } else {
+        return helper.response(res, 403, 'data not found')
+      }
+
+      return helper.response(res, 200, 'Success all menu', result)
+    } catch (error) {
+      return helper.response(res, 400, 'Bad Request', error)
+    }
+  },
+  getMenuById: async (req, res) => {
+    try {
+      const { id } = req.params
+
+      let result
+
+      const getMenu = await getMenuById(id)
+      if (getMenu.length > 0) {
+        const image = await getImageByMenuId(id)
+        if (image.length > 0) {
+          result = {
+            ...getMenu[0],
+            image
+          }
+        } else {
+          result = {
+            ...getMenu[0],
+            image: null
+          }
+        }
+      } else {
+        return helper.response(res, 403, `Resto by id ${id} is not found`)
+      }
+
+      return helper.response(res, 200, `Success get resto by id ${id}`, result)
+    } catch (error) {
+      return helper.response(res, 400, 'Bad Request', error)
+    }
+  },
   postMenu: async (req, res) => {
     try {
       const {
@@ -30,13 +88,14 @@ module.exports = {
       }
 
       const data = {
+        resto_id,
         menu_name,
         menu_category,
         menu_price,
         menu_desc
       }
 
-      const result = await postMenu(data, resto_id)
+      const result = await postMenu(data)
 
       if (result) {
         return helper.response(res, 200, 'Success add menu', result)
@@ -102,7 +161,11 @@ module.exports = {
       const result = await deleteMenu(id)
 
       if (result) {
-        return helper.response(res, 200, 'Success delete menu')
+        return helper.response(
+          res,
+          200,
+          `Success delete ${check[0].menu_name} from menu`
+        )
       } else {
         return helper.response(
           res,

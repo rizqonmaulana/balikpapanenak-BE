@@ -1,6 +1,17 @@
 const connection = require('../config/mysql')
 
 module.exports = {
+  getAllMenu: () => {
+    return new Promise((resolve, reject) => {
+      connection.query('SELECT * FROM menu', (error, result) => {
+        if (!error) {
+          resolve(result)
+        } else {
+          reject(error)
+        }
+      })
+    })
+  },
   postMenu: (data) => {
     return new Promise((resolve, reject) => {
       connection.query('INSERT INTO menu SET ?', data, (error, result) => {
@@ -103,7 +114,20 @@ module.exports = {
     return new Promise((resolve, reject) => {
       connection.query(
         `SELECT * FROM menu_image WHERE menu_id = ${id}`,
-
+        (error, result) => {
+          if (!error) {
+            resolve(result)
+          } else {
+            reject(error)
+          }
+        }
+      )
+    })
+  },
+  getOneImageByMenuId: (id) => {
+    return new Promise((resolve, reject) => {
+      connection.query(
+        `SELECT * FROM menu_image WHERE menu_id = ${id} LIMIT 1`,
         (error, result) => {
           if (!error) {
             resolve(result)
