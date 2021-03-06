@@ -22,7 +22,63 @@ const {
 module.exports = {
   getAllMenu: async (req, res) => {
     try {
-      const result = await getAllMenu()
+      let { type, kecamatan, price, search } = req.query
+
+      if (type) {
+        type = `menu_category = '${type}' `
+      } else {
+        type = ''
+      }
+
+      if (kecamatan) {
+        if (type) {
+          kecamatan = ` AND resto.resto_kecamatan = '${kecamatan}' `
+        } else {
+          kecamatan = ` resto.resto_kecamatan = '${kecamatan}' `
+        }
+      } else {
+        kecamatan = ''
+      }
+
+      if (price === 'low') {
+        if (type || kecamatan) {
+          price = ' AND menu_price > 0 AND menu_price <= 20000 '
+        } else {
+          price = ' menu_price > 0 AND menu_price <= 20000 '
+        }
+      } else if (price === 'mid') {
+        if (type || kecamatan) {
+          price = ' AND menu_price > 20000 AND menu_price <= 50000 '
+        } else {
+          price = ' menu_price > 20000 AND menu_price <= 50000 '
+        }
+      } else if (price === 'high') {
+        if (type || kecamatan) {
+          price = ' AND menu_price > 50000 '
+        } else {
+          price = ' menu_price > 50000 '
+        }
+      } else {
+        price = ''
+      }
+
+      if (search) {
+        if (type || kecamatan || price) {
+          search = ` AND menu_name LIKE'%${search}%' `
+        } else {
+          search = ` menu_name LIKE'%${search}%' `
+        }
+      } else {
+        search = ''
+      }
+
+      let where = ''
+
+      if (search || kecamatan || price || type) {
+        where = 'WHERE '
+      }
+
+      const result = await getAllMenu(where, type, kecamatan, price, search)
       if (result.length > 0) {
         for (let i = 0; i < result.length; i++) {
           const image = await getOneImageByMenuId(result[i].menu_id)
@@ -34,12 +90,12 @@ module.exports = {
             result[i].resto_id
           )
         }
+        return helper.response(res, 200, 'Success all menu', result)
       } else {
-        return helper.response(res, 403, 'data not found')
+        return helper.response(res, 403, 'no data')
       }
-
-      return helper.response(res, 200, 'Success all menu', result)
     } catch (error) {
+      console.log(error)
       return helper.response(res, 400, 'Bad Request', error)
     }
   },
