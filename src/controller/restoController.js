@@ -6,7 +6,10 @@ const {
   getAllResto
 } = require('../model/restoModel')
 
-const { getAvgRatingByRestoId } = require('../model/reputationModel')
+const {
+  getAvgRatingByRestoId,
+  getCountRatingByRestoId
+} = require('../model/reputationModel')
 
 module.exports = {
   getAllResto: async (req, res) => {
@@ -68,10 +71,12 @@ module.exports = {
       let data
       if (getResto.length > 0) {
         const rating = await getAvgRatingByRestoId(getResto[0].resto_id)
+        const review_by = await getCountRatingByRestoId(getResto[0].resto_id)
         if (rating) {
           data = {
             ...getResto[0],
-            rating
+            rating,
+            review_by
           }
         } else {
           data = {
