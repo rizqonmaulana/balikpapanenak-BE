@@ -65,8 +65,6 @@ module.exports = {
       const { id } = req.params
       const getResto = await getRestoByRestoId(id)
 
-      // const getRating = await getAvgRatingByRestoId(id)
-      // console.log(getRating)
       let data
       if (getResto.length > 0) {
         const rating = await getAvgRatingByRestoId(getResto[0].resto_id)
