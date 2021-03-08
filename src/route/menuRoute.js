@@ -1,5 +1,6 @@
 const router = require('express').Router()
 const uploadImage = require('../middleware/menuImage')
+const { isLogin, isAdmin } = require('../middleware/auth')
 
 const {
   getAllMenu,
@@ -17,10 +18,10 @@ router.get('/', getAllMenu)
 router.get('/:id', getMenuById)
 router.get('/new', getNewMenu)
 router.get('/resto/:id', getMenuByRestoId)
-router.post('/', postMenu)
-router.patch('/update', updateMenu)
-router.delete('/delete/:id', deleteMenu)
-router.post('/image', uploadImage, postMenuImage)
-router.delete('/image/delete/:id', deleteMenuImage)
+router.post('/', isLogin, isAdmin, postMenu)
+router.patch('/update', isLogin, isAdmin, updateMenu)
+router.delete('/delete/:id', isLogin, isAdmin, deleteMenu)
+router.post('/image', isLogin, isAdmin, uploadImage, postMenuImage)
+router.delete('/image/delete/:id', isLogin, isAdmin, deleteMenuImage)
 
 module.exports = router
