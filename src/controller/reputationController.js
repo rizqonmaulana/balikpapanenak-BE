@@ -88,6 +88,9 @@ module.exports = {
 
       if (result.length > 0) {
         for (let i = 0; i < result.length; i++) {
+          const getUser = await checkRoleZero(result[i].user_id)
+          result[i].user_email = getUser[0].user_email
+
           result[i].user_rate_count = await getCountRatingPerUser(
             result[i].user_id
           )
