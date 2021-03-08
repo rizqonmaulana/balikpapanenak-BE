@@ -42,7 +42,7 @@ module.exports = {
   checkActiveEmail: (userEmail) => {
     return new Promise((resolve, reject) => {
       connection.query(
-        'SELECT user_email, user_password, user_role FROM user WHERE user_email = ? AND user_status = 1',
+        'SELECT user_id, user_email, user_password, user_role FROM user WHERE user_email = ? AND user_status = 1',
         userEmail,
         (error, result) => {
           !error ? resolve(result) : reject(new Error(error))

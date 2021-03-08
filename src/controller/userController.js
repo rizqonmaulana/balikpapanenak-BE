@@ -14,6 +14,8 @@ const {
   deleteAccount
 } = require('../model/userModel.js')
 
+const { getRestoByUserId } = require('../model/restoModel')
+
 const { createResto, deleteResto } = require('../model/restoModel')
 
 module.exports = {
@@ -137,7 +139,16 @@ module.exports = {
           }
 
           const token = jwt.sign(payload, 'RAHASIA', { expiresIn: '24h' })
-          const result = { ...payload, token }
+
+          let result
+
+          if (user_role == 1) {
+            const getResto = await getRestoByUserId(user_id)
+            result = { ...payload, token, ...getResto[0] }
+          } else {
+            result = { ...payload, token }
+          }
+
           return helper.response(res, 200, 'Login Success', result)
         } else {
           return helper.response(res, 400, 'Password invalid')
