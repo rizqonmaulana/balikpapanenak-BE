@@ -15,6 +15,20 @@ module.exports = {
       )
     })
   },
+  getNewMenu: () => {
+    return new Promise((resolve, reject) => {
+      connection.query(
+        'SELECT * FROM menu JOIN resto ON menu.resto_id = resto.resto_id GROUP BY menu.menu_id ORDER BY `menu`.`menu_created_at`  DESC LIMIT 10',
+        (error, result) => {
+          if (!error) {
+            resolve(result)
+          } else {
+            reject(error)
+          }
+        }
+      )
+    })
+  },
   postMenu: (data) => {
     return new Promise((resolve, reject) => {
       connection.query('INSERT INTO menu SET ?', data, (error, result) => {
@@ -53,6 +67,20 @@ module.exports = {
     return new Promise((resolve, reject) => {
       connection.query(
         `SELECT * FROM menu WHERE menu_id = ${id}`,
+        (error, result) => {
+          if (!error) {
+            resolve(result)
+          } else {
+            reject(error)
+          }
+        }
+      )
+    })
+  },
+  getMenuByRestoId: (id) => {
+    return new Promise((resolve, reject) => {
+      connection.query(
+        `SELECT * FROM menu WHERE resto_id = ${id}`,
         (error, result) => {
           if (!error) {
             resolve(result)

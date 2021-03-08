@@ -3,7 +3,9 @@ const uploadImage = require('../middleware/menuImage')
 
 const {
   getAllMenu,
+  getNewMenu,
   getMenuById,
+  getMenuByRestoId,
   postMenu,
   updateMenu,
   deleteMenu,
@@ -13,6 +15,8 @@ const {
 
 router.get('/', getAllMenu)
 router.get('/:id', getMenuById)
+router.get('/new', getNewMenu)
+router.get('/resto/:id', getMenuByRestoId)
 router.post('/', postMenu)
 router.patch('/update', updateMenu)
 router.delete('/delete/:id', deleteMenu)

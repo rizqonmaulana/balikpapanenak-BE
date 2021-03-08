@@ -3,6 +3,7 @@ const fs = require('fs')
 
 const {
   getAllMenu,
+  getNewMenu,
   postMenu,
   updateMenu,
   getMenuById,
@@ -11,7 +12,8 @@ const {
   getMenuImageById,
   deleteMenuImage,
   getImageByMenuId,
-  getOneImageByMenuId
+  getOneImageByMenuId,
+  getMenuByRestoId
 } = require('../model/menuModel')
 const { getRestoByRestoId } = require('../model/restoModel')
 const {
@@ -96,6 +98,45 @@ module.exports = {
       }
     } catch (error) {
       console.log(error)
+      return helper.response(res, 400, 'Bad Request', error)
+    }
+  },
+  getNewMenu: async (req, res) => {
+    try {
+      const result = await getNewMenu()
+
+      if (result.length > 0) {
+        for (let i = 0; i < result.length; i++) {
+          const getImg = await getOneImageByMenuId(result[i].menu_id)
+          result[i].menu_image = getImg[0]
+        }
+        return helper.response(res, 200, 'Success get newest menu', result)
+      } else {
+        return helper.response(res, 403, 'No data')
+      }
+    } catch (error) {
+      return helper.response(res, 400, 'Bad Request', error)
+    }
+  },
+  getMenuByRestoId: async (req, res) => {
+    try {
+      const { id } = req.params
+
+      const result = await getMenuByRestoId(id)
+
+      if (result.length > 0) {
+        for (let i = 0; i < result.length; i++) {
+          const getImg = await getOneImageByMenuId(result[i].menu_id)
+          result[i].menu_image = getImg
+        }
+      }
+
+      if (result.length > 0) {
+        return helper.response(res, 200, 'Success get newest menu', result)
+      } else {
+        return helper.response(res, 403, 'No data')
+      }
+    } catch (error) {
       return helper.response(res, 400, 'Bad Request', error)
     }
   },
