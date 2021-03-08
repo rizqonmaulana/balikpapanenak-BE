@@ -52,7 +52,7 @@ module.exports = {
       const createUser = await register(data)
 
       if (createUser) {
-        if (user_role == 1) {
+        if (user_role === 1) {
           createResto(createUser.user_id)
         }
 
@@ -142,7 +142,7 @@ module.exports = {
 
           let result
 
-          if (user_role == 1) {
+          if (user_role === 1) {
             const getResto = await getRestoByUserId(user_id)
             result = { ...payload, token, ...getResto[0] }
           } else {

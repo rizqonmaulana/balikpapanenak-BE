@@ -1,4 +1,6 @@
 const router = require('express').Router()
+const uploadImage = require('../middleware/restoImage')
+
 const {
   getAllResto,
   getTopResto,
@@ -10,6 +12,6 @@ const {
 router.get('/all', getAllResto)
 router.get('/top', getTopResto)
 router.get('/:id', getRestoByRestoId)
-router.patch('/update', updateResto)
+router.patch('/update', uploadImage, updateResto)
 
 module.exports = router

@@ -1,4 +1,5 @@
 const helper = require('../helper/response')
+const fs = require('fs')
 
 const {
   getRestoByRestoId,
@@ -109,10 +110,24 @@ module.exports = {
         resto_desc
       } = req.body
 
-      const user = await getRestoByRestoId(resto_id)
+      const resto = await getRestoByRestoId(resto_id)
 
-      if (user.length < 1) {
+      if (resto.length < 1) {
         return helper.response(res, 403, 'Account not found')
+      }
+
+      let newImg
+
+      if (req.file === undefined) {
+        newImg = resto[0].resto_image
+      } else if (req.file && resto[0].resto_image) {
+        newImg = req.file.filename
+        fs.unlink(`./uploads/resto/${resto[0].resto_image}`, function (err) {
+          if (err) throw err
+          console.log('File deleted!')
+        })
+      } else if (req.file) {
+        newImg = req.file.filename
       }
 
       const data = {
@@ -121,6 +136,7 @@ module.exports = {
         resto_address,
         resto_kelurahan,
         resto_kecamatan,
+        resto_image: newImg,
         resto_open_hour,
         resto_close_hour,
         resto_open_day,

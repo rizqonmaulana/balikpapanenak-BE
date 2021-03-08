@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const uploadImage = require('../middleware/multer')
+const uploadImage = require('../middleware/menuImage')
 
 const {
   getAllMenu,
