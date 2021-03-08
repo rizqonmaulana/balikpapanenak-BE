@@ -1,4 +1,5 @@
 const helper = require('../helper/response')
+const fs = require('fs')
 
 const {
   getRestoByRestoId,
@@ -6,7 +7,10 @@ const {
   getAllResto
 } = require('../model/restoModel')
 
-const { getAvgRatingByRestoId } = require('../model/reputationModel')
+const {
+  getAvgRatingByRestoId,
+  getCountRatingByRestoId
+} = require('../model/reputationModel')
 
 module.exports = {
   getAllResto: async (req, res) => {
@@ -65,15 +69,15 @@ module.exports = {
       const { id } = req.params
       const getResto = await getRestoByRestoId(id)
 
-      // const getRating = await getAvgRatingByRestoId(id)
-      // console.log(getRating)
       let data
       if (getResto.length > 0) {
         const rating = await getAvgRatingByRestoId(getResto[0].resto_id)
+        const review_by = await getCountRatingByRestoId(getResto[0].resto_id)
         if (rating) {
           data = {
             ...getResto[0],
-            rating
+            rating,
+            review_by
           }
         } else {
           data = {
@@ -97,6 +101,7 @@ module.exports = {
         resto_name,
         resto_phone,
         resto_address,
+        resto_kelurahan,
         resto_kecamatan,
         resto_open_hour,
         resto_close_hour,
@@ -105,17 +110,33 @@ module.exports = {
         resto_desc
       } = req.body
 
-      const user = await getRestoByRestoId(resto_id)
+      const resto = await getRestoByRestoId(resto_id)
 
-      if (user.length < 1) {
+      if (resto.length < 1) {
         return helper.response(res, 403, 'Account not found')
+      }
+
+      let newImg
+
+      if (req.file === undefined) {
+        newImg = resto[0].resto_image
+      } else if (req.file && resto[0].resto_image) {
+        newImg = req.file.filename
+        fs.unlink(`./uploads/resto/${resto[0].resto_image}`, function (err) {
+          if (err) throw err
+          console.log('File deleted!')
+        })
+      } else if (req.file) {
+        newImg = req.file.filename
       }
 
       const data = {
         resto_name,
         resto_phone,
         resto_address,
+        resto_kelurahan,
         resto_kecamatan,
+        resto_image: newImg,
         resto_open_hour,
         resto_close_hour,
         resto_open_day,

@@ -33,7 +33,7 @@ module.exports = {
   getRestoByUserId: (id) => {
     return new Promise((resolve, reject) => {
       connection.query(
-        `SELECT * FROM user JOIN resto ON user.user_id = resto.user_id WHERE resto.user_id = '${id}' AND user_status = 1`,
+        `SELECT * FROM resto WHERE resto.user_id = '${id}'`,
         (error, result) => {
           if (!error) {
             resolve(result)

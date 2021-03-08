@@ -61,5 +61,19 @@ module.exports = {
         }
       )
     })
+  },
+  getCountRatingByRestoId: (id) => {
+    return new Promise((resolve, reject) => {
+      connection.query(
+        `SELECT COUNT(reputation_rating) AS total FROM reputation WHERE resto_id = ${id}`,
+        (error, result) => {
+          if (!error) {
+            resolve(result[0].total)
+          } else {
+            reject(error)
+          }
+        }
+      )
+    })
   }
 }
