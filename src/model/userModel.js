@@ -110,6 +110,20 @@ module.exports = {
       )
     })
   },
+  getUserById: (id) => {
+    return new Promise((resolve, reject) => {
+      connection.query(
+        `SELECT * FROM user WHERE user_id = '${id}'`,
+        (error, result) => {
+          if (!error) {
+            resolve(result)
+          } else {
+            reject(error)
+          }
+        }
+      )
+    })
+  },
   deleteAccount: (email) => {
     return new Promise((resolve, reject) => {
       connection.query(
