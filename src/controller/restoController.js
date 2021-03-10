@@ -4,7 +4,12 @@ const fs = require('fs')
 const {
   getRestoByRestoId,
   updateResto,
-  getAllResto
+  getAllResto,
+  postRestoImage,
+  getRestoImageById,
+  deleteRestoImage,
+  getOneImageByRestoId,
+  getImageByRestoId
 } = require('../model/restoModel')
 
 const {
@@ -41,6 +46,14 @@ module.exports = {
       if (getResto.length > 0) {
         for (let i = 0; i < getResto.length; i++) {
           getResto[i].rating = await getAvgRatingByRestoId(getResto[i].resto_id)
+          const getImage = await getOneImageByRestoId(getResto[i].resto_id)
+
+          if (getImage.length > 0) {
+            getResto[i].resto_image = getImage[0].image_name
+          } else {
+            getResto[i].resto_image = null
+          }
+
           resultArr.push(getResto[i])
         }
       }
@@ -73,16 +86,19 @@ module.exports = {
       if (getResto.length > 0) {
         const rating = await getAvgRatingByRestoId(getResto[0].resto_id)
         const review_by = await getCountRatingByRestoId(getResto[0].resto_id)
+        const resto_image = await getImageByRestoId(getResto[0].resto_id)
         if (rating) {
           data = {
             ...getResto[0],
             rating,
-            review_by
+            review_by,
+            resto_image
           }
         } else {
           data = {
             ...getResto[0],
-            rating: 0
+            rating: 0,
+            resto_image
           }
         }
       } else {
@@ -116,27 +132,12 @@ module.exports = {
         return helper.response(res, 403, 'Account not found')
       }
 
-      let newImg
-
-      if (req.file === undefined) {
-        newImg = resto[0].resto_image
-      } else if (req.file && resto[0].resto_image) {
-        newImg = req.file.filename
-        fs.unlink(`./uploads/resto/${resto[0].resto_image}`, function (err) {
-          if (err) throw err
-          console.log('File deleted!')
-        })
-      } else if (req.file) {
-        newImg = req.file.filename
-      }
-
       const data = {
         resto_name,
         resto_phone,
         resto_address,
         resto_kelurahan,
         resto_kecamatan,
-        resto_image: newImg,
         resto_open_hour,
         resto_close_hour,
         resto_open_day,
@@ -155,6 +156,76 @@ module.exports = {
       )
     } catch (error) {
       console.log(error)
+      return helper.response(res, 400, 'Bad Request', error)
+    }
+  },
+  postRestoImage: async (req, res) => {
+    try {
+      const { resto_id } = req.body
+
+      const check = await getRestoByRestoId(resto_id)
+      // any resto ?
+      if (check.length < 1) {
+        if (req.file.filename) {
+          fs.unlink(`./uploads/resto/${req.file.filename}`, function (err) {
+            if (err) throw err
+            console.log('File deleted!')
+          })
+        }
+        return helper.response(res, 403, `Menu by id ${resto_id} not found`)
+      }
+
+      const data = {
+        resto_id,
+        image_name: req.file === undefined ? '' : req.file.filename
+      }
+
+      const result = await postRestoImage(data)
+
+      if (result) {
+        return helper.response(res, 200, 'Success add resto image', result)
+      } else {
+        fs.unlink(`./uploads/resto/${req.file.filename}`, function (err) {
+          if (err) throw err
+          console.log('File deleted!')
+        })
+        return helper.response(res, 400, "Oops there's something wrong", result)
+      }
+    } catch (error) {
+      return helper.response(res, 400, 'Bad Request', error)
+    }
+  },
+  deleteRestoImage: async (req, res) => {
+    try {
+      const { image_id } = req.params
+
+      const check = await getRestoImageById(image_id)
+      console.log(check)
+      if (check.length < 1) {
+        return helper.response(
+          res,
+          403,
+          `Resto Image by id ${image_id} not found`
+        )
+      }
+
+      const result = await deleteRestoImage(image_id)
+
+      if (result) {
+        fs.unlink(`./uploads/resto/${check[0].image_name}`, function (err) {
+          if (err) throw err
+          console.log('File deleted!')
+        })
+        return helper.response(res, 200, 'Success delete image')
+      } else {
+        return helper.response(
+          res,
+          400,
+          "Oops there's something wrong.",
+          result
+        )
+      }
+    } catch (error) {
       return helper.response(res, 400, 'Bad Request', error)
     }
   }

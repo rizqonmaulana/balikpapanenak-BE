@@ -326,15 +326,19 @@ module.exports = {
   },
   deleteMenuImage: async (req, res) => {
     try {
-      const { id } = req.params
+      const { image_id } = req.params
 
-      const check = await getMenuImageById(id)
+      const check = await getMenuImageById(image_id)
       console.log(check)
       if (check.length < 1) {
-        return helper.response(res, 403, `Menu Image by id ${id} not found`)
+        return helper.response(
+          res,
+          403,
+          `Menu Image by id ${image_id} not found`
+        )
       }
 
-      const result = await deleteMenuImage(id)
+      const result = await deleteMenuImage(image_id)
 
       if (result) {
         fs.unlink(`./uploads/menu/${check[0].image_name}`, function (err) {
@@ -344,7 +348,7 @@ module.exports = {
         return helper.response(
           res,
           200,
-          `Success delete menu image by id ${id}`
+          `Success delete menu image by id ${image_id}`
         )
       } else {
         return helper.response(

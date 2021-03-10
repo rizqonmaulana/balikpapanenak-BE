@@ -91,5 +91,81 @@ module.exports = {
         }
       )
     })
+  },
+  postRestoImage: (data) => {
+    return new Promise((resolve, reject) => {
+      connection.query(
+        'INSERT INTO resto_image SET ?',
+        data,
+        (error, result) => {
+          if (!error) {
+            const newResult = {
+              image_id: result.insertId,
+              ...data
+            }
+            resolve(newResult)
+          } else {
+            reject(error)
+          }
+        }
+      )
+    })
+  },
+  getRestoImageById: (id) => {
+    return new Promise((resolve, reject) => {
+      connection.query(
+        `SELECT * FROM resto_image WHERE image_id = ${id}`,
+        (error, result) => {
+          if (!error) {
+            resolve(result)
+          } else {
+            reject(error)
+          }
+        }
+      )
+    })
+  },
+  getOneImageByRestoId: (id) => {
+    return new Promise((resolve, reject) => {
+      connection.query(
+        `SELECT * FROM resto_image WHERE resto_id = ${id} LIMIT 1`,
+        (error, result) => {
+          if (!error) {
+            resolve(result)
+          } else {
+            reject(error)
+          }
+        }
+      )
+    })
+  },
+  getImageByRestoId: (id) => {
+    return new Promise((resolve, reject) => {
+      connection.query(
+        `SELECT * FROM resto_image WHERE resto_id = ${id}`,
+        (error, result) => {
+          if (!error) {
+            resolve(result)
+          } else {
+            reject(error)
+          }
+        }
+      )
+    })
+  },
+  deleteRestoImage: (id) => {
+    return new Promise((resolve, reject) => {
+      connection.query(
+        'DELETE FROM resto_image WHERE image_id = ?',
+        id,
+        (error, result) => {
+          if (!error) {
+            resolve(result)
+          } else {
+            reject(error)
+          }
+        }
+      )
+    })
   }
 }
