@@ -75,5 +75,33 @@ module.exports = {
         }
       )
     })
+  },
+  getCountRatingPerUser: (id) => {
+    return new Promise((resolve, reject) => {
+      connection.query(
+        `SELECT COUNT(reputation_rating) AS total FROM reputation WHERE user_id = ${id}`,
+        (error, result) => {
+          if (!error) {
+            resolve(result[0].total)
+          } else {
+            reject(error)
+          }
+        }
+      )
+    })
+  },
+  checkRateCount: (user_id, resto_id) => {
+    return new Promise((resolve, reject) => {
+      connection.query(
+        `SELECT * FROM reputation WHERE user_id = ${user_id} AND resto_id = ${resto_id}`,
+        (error, result) => {
+          if (!error) {
+            resolve(result)
+          } else {
+            reject(error)
+          }
+        }
+      )
+    })
   }
 }

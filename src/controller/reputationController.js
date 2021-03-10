@@ -3,7 +3,9 @@ const helper = require('../helper/response')
 const {
   postReputation,
   deleteReputation,
-  getReputationByRestoId
+  getReputationByRestoId,
+  getCountRatingPerUser,
+  checkRateCount
 } = require('../model/reputationModel')
 const { checkRoleZero } = require('../model/userModel')
 const { getRestoByRestoId } = require('../model/restoModel')
@@ -19,12 +21,21 @@ module.exports = {
       } = req.body
 
       const checkUser = await checkRoleZero(user_id)
-      if (checkUser < 1) {
+      if (checkUser.length < 1) {
         return helper.response(res, 403, 'user not found')
       }
       const checkResto = await getRestoByRestoId(resto_id)
-      if (checkResto < 1) {
+      if (checkResto.length < 1) {
         return helper.response(res, 403, 'resto not found')
+      }
+
+      const checkRate = await checkRateCount(user_id, resto_id)
+      if (checkRate.length > 0) {
+        return helper.response(
+          res,
+          400,
+          'You only can review once / restaurant'
+        )
       }
 
       const data = {
@@ -76,6 +87,15 @@ module.exports = {
       const result = await getReputationByRestoId(id)
 
       if (result.length > 0) {
+        for (let i = 0; i < result.length; i++) {
+          const getUser = await checkRoleZero(result[i].user_id)
+          result[i].user_email = getUser[0].user_email
+
+          result[i].user_rate_count = await getCountRatingPerUser(
+            result[i].user_id
+          )
+        }
+
         return helper.response(res, 200, 'Success get reputation data', result)
       } else {
         return helper.response(

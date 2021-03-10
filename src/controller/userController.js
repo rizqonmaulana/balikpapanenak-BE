@@ -11,14 +11,37 @@ const {
   updateUser,
   resetPassword,
   getUserByEmail,
+  getUserById,
   deleteAccount
 } = require('../model/userModel.js')
 
-const { getRestoByUserId } = require('../model/restoModel')
-
-const { createResto, deleteResto } = require('../model/restoModel')
+const {
+  getRestoByUserId,
+  createResto,
+  deleteResto
+} = require('../model/restoModel')
 
 module.exports = {
+  getUserById: async (req, res) => {
+    try {
+      const { id } = req.params
+
+      let result = await getUserById(id)
+      if (result.length > 0) {
+        if (result[0].user_role === 1) {
+          const getResto = await getRestoByUserId(id)
+          result = { ...result[0], ...getResto[0] }
+        }
+
+        return helper.response(res, 200, `success get user by id ${id}`, result)
+      } else {
+        return helper.response(res, 403, `user by id ${id} is not found`)
+      }
+    } catch (error) {
+      console.log(error)
+      return helper.response(res, 400, 'Bad Request', error)
+    }
+  },
   register: async (req, res) => {
     try {
       const { user_email, user_role } = req.body
@@ -52,7 +75,7 @@ module.exports = {
       const createUser = await register(data)
 
       if (createUser) {
-        if (user_role === 1) {
+        if (user_role == 1) {
           createResto(createUser.user_id)
         }
 
