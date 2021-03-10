@@ -132,7 +132,12 @@ module.exports = {
       }
 
       if (result.length > 0) {
-        return helper.response(res, 200, 'Success get newest menu', result)
+        return helper.response(
+          res,
+          200,
+          `Success get menu by resto id ${id}`,
+          result
+        )
       } else {
         return helper.response(res, 403, 'No data')
       }

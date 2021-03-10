@@ -75,7 +75,7 @@ module.exports = {
       const createUser = await register(data)
 
       if (createUser) {
-        if (user_role === 1) {
+        if (user_role == 1) {
           createResto(createUser.user_id)
         }
 
