@@ -15,8 +15,8 @@ const {
 } = require('../controller/menuController')
 
 router.get('/', getAllMenu)
-router.get('/:id', getMenuById)
 router.get('/new', getNewMenu)
+router.get('/:id', getMenuById)
 router.get('/resto/:id', getMenuByRestoId)
 router.post('/', isLogin, isAdmin, postMenu)
 router.patch('/update', isLogin, isAdmin, updateMenu)
