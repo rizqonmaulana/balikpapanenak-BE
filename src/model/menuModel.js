@@ -1,10 +1,10 @@
 const connection = require('../config/mysql')
 
 module.exports = {
-  getAllMenu: (where, type, kecamatan, price, search) => {
+  getAllMenu: (where, type, kecamatan, price, search, limit) => {
     return new Promise((resolve, reject) => {
       connection.query(
-        `SELECT * FROM menu JOIN resto ON menu.resto_id = resto.resto_id ${where} ${type}${kecamatan}${price}${search} GROUP BY menu.menu_id`,
+        `SELECT * FROM menu JOIN resto ON menu.resto_id = resto.resto_id ${where} ${type}${kecamatan}${price}${search} GROUP BY menu.menu_id LIMIT ${limit}`,
         (error, result) => {
           if (!error) {
             resolve(result)
