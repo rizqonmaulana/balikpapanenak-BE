@@ -24,6 +24,7 @@ const {
 module.exports = {
   getAllMenu: async (req, res) => {
     try {
+      const { limit } = req.query
       let { type, kecamatan, price, search } = req.query
 
       if (type) {
@@ -80,7 +81,14 @@ module.exports = {
         where = 'WHERE '
       }
 
-      const result = await getAllMenu(where, type, kecamatan, price, search)
+      const result = await getAllMenu(
+        where,
+        type,
+        kecamatan,
+        price,
+        search,
+        limit
+      )
       if (result.length > 0) {
         for (let i = 0; i < result.length; i++) {
           const image = await getOneImageByMenuId(result[i].menu_id)
