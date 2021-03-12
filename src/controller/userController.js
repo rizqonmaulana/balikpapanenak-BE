@@ -167,7 +167,8 @@ module.exports = {
 
           if (user_role === 1) {
             const getResto = await getRestoByUserId(user_id)
-            result = { ...payload, token, ...getResto[0] }
+            const restoId = getResto[0].resto_id
+            result = { ...payload, token, resto_id: restoId }
           } else {
             result = { ...payload, token }
           }
