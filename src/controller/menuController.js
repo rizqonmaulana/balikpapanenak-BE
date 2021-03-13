@@ -130,7 +130,9 @@ module.exports = {
     try {
       const { id } = req.params
 
-      const result = await getMenuByRestoId(id)
+      const { limit } = req.query
+
+      const result = await getMenuByRestoId(id, limit)
 
       if (result.length > 0) {
         for (let i = 0; i < result.length; i++) {

@@ -77,10 +77,10 @@ module.exports = {
       )
     })
   },
-  getMenuByRestoId: (id) => {
+  getMenuByRestoId: (id, limit) => {
     return new Promise((resolve, reject) => {
       connection.query(
-        `SELECT * FROM menu WHERE resto_id = ${id}`,
+        `SELECT * FROM menu WHERE resto_id = ${id} LIMIT ${limit}`,
         (error, result) => {
           if (!error) {
             resolve(result)

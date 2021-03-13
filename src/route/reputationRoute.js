@@ -7,7 +7,7 @@ const {
   getReputationByRestoId
 } = require('../controller/reputationController')
 
-router.get('/:id', isLogin, getReputationByRestoId)
+router.get('/:id', getReputationByRestoId)
 router.post('/', isLogin, postReputation)
 router.delete('/:id', isLogin, deleteReputation)
 
