@@ -34,10 +34,10 @@ module.exports = {
       )
     })
   },
-  getReputationByRestoId: (id) => {
+  getReputationByRestoId: (id, limit) => {
     return new Promise((resolve, reject) => {
       connection.query(
-        `SELECT * FROM reputation WHERE resto_id = '${id}'`,
+        `SELECT * FROM reputation WHERE resto_id = '${id}' LIMIT ${limit}`,
         (error, result) => {
           if (!error) {
             resolve(result)
