@@ -1,10 +1,10 @@
 const connection = require('../config/mysql')
 
 module.exports = {
-  getAllMenu: (where, type, kecamatan, price, search, limit) => {
+  getAllMenu: (where, type, kecamatan, price, search) => {
     return new Promise((resolve, reject) => {
       connection.query(
-        `SELECT * FROM menu JOIN resto ON menu.resto_id = resto.resto_id ${where} ${type}${kecamatan}${price}${search} GROUP BY menu.menu_id LIMIT ${limit}`,
+        `SELECT * FROM menu JOIN resto ON menu.resto_id = resto.resto_id ${where} ${type}${kecamatan}${price}${search} GROUP BY menu.menu_id`,
         (error, result) => {
           if (!error) {
             resolve(result)
@@ -77,10 +77,10 @@ module.exports = {
       )
     })
   },
-  getMenuByRestoId: (id, limit) => {
+  getMenuByRestoId: (id) => {
     return new Promise((resolve, reject) => {
       connection.query(
-        `SELECT * FROM menu WHERE resto_id = ${id} LIMIT ${limit}`,
+        `SELECT * FROM menu WHERE resto_id = ${id}`,
         (error, result) => {
           if (!error) {
             resolve(result)
