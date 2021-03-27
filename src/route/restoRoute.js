@@ -16,6 +16,6 @@ router.get('/top', getTopResto)
 router.patch('/update', isLogin, isAdmin, updateResto)
 router.post('/image', isLogin, isAdmin, uploadImage, postRestoImage)
 router.delete('/image/delete/:image_id', isLogin, isAdmin, deleteRestoImage)
-router.get('/:id', getRestoByRestoId)
+router.get('/get/:id', getRestoByRestoId)
 
 module.exports = router
