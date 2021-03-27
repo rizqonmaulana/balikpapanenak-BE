@@ -16,12 +16,12 @@ const {
 
 router.get('/', getAllMenu)
 router.get('/new', getNewMenu)
+router.get('/:id', getMenuById)
 router.get('/resto/:id', getMenuByRestoId)
 router.post('/', isLogin, isAdmin, postMenu)
 router.patch('/update', isLogin, isAdmin, updateMenu)
 router.delete('/delete/:id', isLogin, isAdmin, deleteMenu)
 router.post('/image', isLogin, isAdmin, uploadImage, postMenuImage)
 router.delete('/image/delete/:id', isLogin, isAdmin, deleteMenuImage)
-router.get('/:id', getMenuById)
 
 module.exports = router
