@@ -16,6 +16,6 @@ router.post('/login', login)
 router.patch('/update/password', isLogin, updatePassword)
 router.patch('/forgot', forgotPassword)
 router.patch('/reset', resetPassword)
-router.get('/:id', isLogin, getUserById)
+router.get('/get/:id', isLogin, getUserById)
 
 module.exports = router
